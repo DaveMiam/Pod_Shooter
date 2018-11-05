@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class FireGun : MonoBehaviour {
+public class FireGun : NetworkBehaviour {
     [SerializeField] GameObject Bullet;
     [SerializeField] GameObject BulletEmiter;
     [SerializeField] float fireRate = 1;
@@ -14,14 +15,25 @@ public class FireGun : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        timerLastShot += Time.deltaTime;
-        if (timerLastShot > fireRate ) {
-            var fire1 = Input.GetAxis("Fire1");
-            if (fire1 > 0) {
-                Instantiate(Bullet, BulletEmiter.transform.position, BulletEmiter.transform.rotation);
-                timerLastShot = 0;
+        if(isLocalPlayer)
+        {
+            timerLastShot += Time.deltaTime;
+            if (timerLastShot > fireRate)
+            {
+                var fire1 = Input.GetAxis("Fire1");
+                if (fire1 > 0)
+                {
+                    CmdFire();
+                    timerLastShot = 0;
+                }
             }
         }
+    }
 
+    [Command]
+    void CmdFire()
+    {
+       GameObject bullet  = Instantiate(Bullet, BulletEmiter.transform.position, BulletEmiter.transform.rotation);
+        NetworkServer.Spawn(bullet);
     }
 }
